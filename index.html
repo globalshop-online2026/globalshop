@@ -1,14 +1,119 @@
 
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GlobalShop | فروشگاه جهانی</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlobalShop | Global Online Store</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
+header{background:#102b50;color:white;padding:20px 5%;display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.logo{font-size:27px;font-weight:bold}
+.logo span{color:#65d5ff}
+select,input,button{padding:11px;border-radius:8px;border:1px solid #d4dbea;font-size:15px}
+header select{max-width:100%;background:white}
+.hero{padding:55px 6%;background:linear-gradient(120deg,#12345c,#176fa3);color:white;text-align:center}
+.hero h1{font-size:clamp(30px,5vw,48px);margin:0 0 15px}
+.hero p{font-size:18px;line-height:1.7}
+.search{display:flex;max-width:600px;margin:25px auto 0;gap:8px}
+.search input{flex:1;min-width:0}
+button{cursor:pointer;background:#0879d1;color:white;border:0;font-weight:bold}
+button:hover{opacity:.88}
+main{max-width:1200px;margin:auto;padding:30px 20px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.categories{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 25px}
+.categories button{background:white;color:#173451;border:1px solid #d8e1ed}
+.categories button.active{background:#0879d1;color:white}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px}
+.card{background:white;border-radius:14px;padding:18px;box-shadow:0 4px 18px #152b4510}
+.picture{height:130px;border-radius:10px;background:#eaf3fb;display:grid;place-items:center;font-size:62px}
+.card h3{margin-bottom:8px}
+.price{font-size:22px;font-weight:bold;color:#0879d1}
+.card button{width:100%;margin-top:10px}
+.notice{background:#fff4d6;color:#654900;padding:13px;border-radius:8px;line-height:1.6;margin-top:25px}
+footer{text-align:center;padding:25px;background:#102b50;color:white;margin-top:25px}
+[dir="rtl"] .hero,[dir="rtl"] main{text-align:right}
+@media(max-width:520px){header{justify-content:center}.search{flex-direction:column}.hero{padding:35px 18px}}
+</style>
 </head>
-<body style="font-family:Arial,sans-serif;text-align:center;padding:60px 20px;background:#f7f7f2;color:#222">
-  <h1>GlobalShop 🌍</h1>
-  <h2>به فروشگاه جهانی ما خوش آمدید!</h2>
-  <p>فروشگاه آنلاین شما در حال آماده‌سازی است.</p>
+<body>
+<header>
+  <div class="logo">🌐 Global<span>Shop</span></div>
+  <div>
+    <select id="language" aria-label="Language">
+      <option value="en">English</option>
+      <option value="de">Deutsch</option>
+      <option value="fa">فارسی</option>
+    </select>
+    <button onclick="showCart()">🛒 <span id="cartCount">0</span></button>
+  </div>
+</header>
+
+<section class="hero">
+  <h1 id="headline">Welcome to GlobalShop</h1>
+  <p id="subtitle">Discover products for everyday life, all in one place.</p>
+  <div class="search">
+    <input id="search" placeholder="Search products..." oninput="renderProducts()">
+    <button id="searchButton" onclick="renderProducts()">Search</button>
+  </div>
+</section>
+
+<main>
+  <div class="toolbar">
+    <h2 id="shopTitle">Explore our store</h2>
+    <span id="productCount"></span>
+  </div>
+  <div class="categories" id="categories"></div>
+  <div class="products" id="products"></div>
+  <div class="notice" id="notice">
+    Demo store: prices and products are examples. Online payment and ordering are not yet enabled.
+  </div>
+</main>
+
+<footer>© 2026 GlobalShop · <span id="footerText">Your world, one store.</span></footer>
+
+<script>
+const words={
+en:{headline:"Welcome to GlobalShop",subtitle:"Discover products for everyday life, all in one place.",search:"Search products...",shop:"Explore our store",all:"All",home:"Home",fashion:"Fashion",tech:"Technology",pets:"Pets",add:"Add to cart",empty:"No products found.",added:"Added to cart!",cart:"Items in your cart",notice:"Demo store: prices and products are examples. Online payment and ordering are not yet enabled.",footer:"Your world, one store."},
+de:{headline:"Willkommen bei GlobalShop",subtitle:"Entdecke Produkte für jeden Tag an einem Ort.",search:"Produkte suchen...",shop:"Unser Sortiment",all:"Alle",home:"Haushalt",fashion:"Mode",tech:"Technik",pets:"Haustiere",add:"In den Warenkorb",empty:"Keine Produkte gefunden.",added:"Zum Warenkorb hinzugefügt!",cart:"Artikel im Warenkorb",notice:"Demo-Shop: Produkte und Preise sind Beispiele. Online-Bestellungen und Zahlungen sind noch nicht aktiviert.",footer:"Deine Welt, ein Shop."},
+fa:{headline:"به GlobalShop خوش آمدید",subtitle:"محصولات مورد نیاز زندگی روزمره، همه در یک فروشگاه.",search:"جست‌وجوی محصولات...",shop:"محصولات فروشگاه",all:"همه",home:"خانه",fashion:"پوشاک",tech:"تکنولوژی",pets:"حیوانات",add:"افزودن به سبد",empty:"محصولی پیدا نشد.",added:"به سبد خرید اضافه شد!",cart:"تعداد محصولات در سبد",notice:"فروشگاه آزمایشی است؛ قیمت‌ها نمونه هستند. پرداخت و سفارش آنلاین هنوز فعال نیست.",footer:"جهان شما، یک فروشگاه."}
+};
+const items=[
+{id:1,cat:"home",emoji:"🏠",price:19.99,n:{en:"Home Organizer",de:"Aufbewahrungsbox",fa:"نظم‌دهنده خانه"}},
+{id:2,cat:"fashion",emoji:"🎒",price:24.99,n:{en:"Everyday Backpack",de:"Alltagsrucksack",fa:"کوله‌پشتی روزمره"}},
+{id:3,cat:"tech",emoji:"🎧",price:29.99,n:{en:"Wireless Headphones",de:"Kabellose Kopfhörer",fa:"هدفون بی‌سیم"}},
+{id:4,cat:"pets",emoji:"🐾",price:12.99,n:{en:"Pet Accessories",de:"Haustierzubehör",fa:"لوازم حیوانات"}},
+{id:5,cat:"home",emoji:"💡",price:14.99,n:{en:"LED Desk Light",de:"LED-Schreibtischlampe",fa:"چراغ رومیزی LED"}},
+{id:6,cat:"fashion",emoji:"👜",price:34.99,n:{en:"Classic Shoulder Bag",de:"Klassische Umhängetasche",fa:"کیف دوشی کلاسیک"}}
+];
+let lang="en",category="all",cart=[];
+function t(key){return words[lang][key]}
+function setup(){
+document.documentElement.lang=lang;
+document.documentElement.dir=lang==="fa"?"rtl":"ltr";
+document.getElementById("headline").textContent=t("headline");
+document.getElementById("subtitle").textContent=t("subtitle");
+document.getElementById("search").placeholder=t("search");
+document.getElementById("shopTitle").textContent=t("shop");
+document.getElementById("notice").textContent=t("notice");
+document.getElementById("footerText").textContent=t("footer");
+document.getElementById("searchButton").textContent=lang==="fa"?"جست‌وجو":lang==="de"?"Suchen":"Search";
+const cats=[["all",t("all")],["home",t("home")],["fashion",t("fashion")],["tech",t("tech")],["pets",t("pets")]];
+document.getElementById("categories").innerHTML=cats.map(([id,label])=>`<button class="${category===id?"active":""}" onclick="setCategory('${id}')">${label}</button>`).join("");
+renderProducts();
+}
+function setCategory(c){category=c;setup()}
+function renderProducts(){
+const q=document.getElementById("search").value.toLowerCase();
+const shown=items.filter(p=>(category==="all"||p.cat===category)&&p.n[lang].toLowerCase().includes(q));
+document.getElementById("productCount").textContent=shown.length;
+document.getElementById("products").innerHTML=shown.map(p=>`<article class="card"><div class="picture">${p.emoji}</div><h3>${p.n[lang]}</h3><div class="price">€${p.price.toFixed(2)}</div><button onclick="addCart(${p.id})">${t("add")}</button></article>`).join("")||`<p>${t("empty")}</p>`;
+}
+function addCart(id){cart.push(id);document.getElementById("cartCount").textContent=cart.length;alert(t("added"))}
+function showCart(){alert(t("cart")+": "+cart.length)}
+document.getElementById("language").addEventListener("change",e=>{lang=e.target.value;setup()});
+setup();
+</script>
 </body>
 </html>
