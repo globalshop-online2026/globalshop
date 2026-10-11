@@ -113,7 +113,211 @@ document.getElementById("products").innerHTML=shown.map(p=>`<article class="card
 function addCart(id){cart.push(id);document.getElementById("cartCount").textContent=cart.length;alert(t("added"))}
 function showCart(){alert(t("cart")+": "+cart.length)}
 document.getElementById("language").addEventListener("change",e=>{lang=e.target.value;setup()});
-setup();
-</script>
+setup()
+  // GlobalShop - Free AI Assistant Prototype
+
+(function () {
+  const style = document.createElement("style");
+
+  style.textContent = `
+    #gs-ai-button {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 9999;
+      background: #176b45;
+      color: white;
+      border: 0;
+      border-radius: 28px;
+      padding: 14px 20px;
+      cursor: pointer;
+      font-size: 15px;
+      box-shadow: 0 3px 12px #0003;
+    }
+
+    #gs-ai-panel {
+      display: none;
+      position: fixed;
+      right: 20px;
+      bottom: 80px;
+      width: 320px;
+      max-width: calc(100vw - 40px);
+      background: white;
+      color: #222;
+      border: 1px solid #ddd;
+      border-radius: 14px;
+      padding: 15px;
+      z-index: 9999;
+      box-shadow: 0 4px 20px #0003;
+      font-family: Arial, sans-serif;
+    }
+
+    #gs-ai-panel button {
+      cursor: pointer;
+      padding: 8px;
+      margin: 3px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      background: #f4f7f5;
+    }
+
+    #gs-ai-messages {
+      height: 180px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      padding: 8px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+
+    #gs-ai-input {
+      width: 65%;
+      padding: 9px;
+      box-sizing: border-box;
+    }
+
+    #gs-ai-send {
+      background: #176b45 !important;
+      color: white;
+    }
+  `;
+
+  document.head.appendChild(style);
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <button id="gs-ai-button">🤖 GlobalShop AI</button>
+
+    <div id="gs-ai-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong>GlobalShop Assistant</strong>
+        <button id="gs-ai-close">✕</button>
+      </div>
+
+      <div>
+        <button id="gs-customer-tab">دستیار مشتریان</button>
+        <button id="gs-owner-tab">مدیریت فروشگاه</button>
+      </div>
+
+      <div id="gs-ai-customer">
+        <div id="gs-ai-messages">
+          <p>سلام! 👋 به GlobalShop خوش آمدید.</p>
+          <p>درباره محصولات یا خریدتان سؤال کنید.</p>
+        </div>
+
+        <input id="gs-ai-input" placeholder="سؤال خود را بنویسید">
+        <button id="gs-ai-send">ارسال</button>
+      </div>
+
+      <div id="gs-ai-owner" style="display:none">
+        <h3>گزارش فروشگاه</h3>
+        <div id="gs-ai-report"></div>
+        <p style="font-size:12px">
+          این گزارش بر اساس اطلاعات همین مرورگر است.
+          هنوز اطلاعات فروش واقعی وجود ندارد.
+        </p>
+      </div>
+    </div>
+  `);
+
+  const panel = document.getElementById("gs-ai-panel");
+  const messages = document.getElementById("gs-ai-messages");
+
+  document.getElementById("gs-ai-button").onclick = function () {
+    panel.style.display =
+      panel.style.display === "block" ? "none" : "block";
+  };
+
+  document.getElementById("gs-ai-close").onclick = function () {
+    panel.style.display = "none";
+  };
+
+  document.getElementById("gs-customer-tab").onclick = function () {
+    document.getElementById("gs-ai-customer").style.display = "block";
+    document.getElementById("gs-ai-owner").style.display = "none";
+  };
+
+  document.getElementById("gs-owner-tab").onclick = function () {
+    document.getElementById("gs-ai-customer").style.display = "none";
+    document.getElementById("gs-ai-owner").style.display = "block";
+    gsUpdateReport();
+  };
+
+  function gsUpdateReport() {
+    const categoryCount = new Set(items.map(p => p.cat)).size;
+
+    document.getElementById("gs-ai-report").textContent =
+      "تعداد محصولات: " + items.length +
+      "\nتعداد دسته‌بندی‌ها: " + categoryCount +
+      "\nتعداد کالاهای سبد خرید: " + cart.length;
+    
+    document.getElementById("gs-ai-report").style.whiteSpace = "pre-line";
+  }
+
+  function gsReply(question) {
+    const q = question.toLowerCase();
+
+    if (
+      q.includes("سلام") ||
+      q.includes("hello") ||
+      q.includes("hallo")
+    ) {
+      return "سلام! خوش آمدید. چطور می‌توانم در انتخاب محصول کمک کنم؟";
+    }
+
+    if (
+      q.includes("سبد") ||
+      q.includes("cart")
+    ) {
+      return "تعداد کالاهای سبد خرید شما: " + cart.length;
+    }
+
+    if (
+      q.includes("قیمت") ||
+      q.includes("price") ||
+      q.includes("preis")
+    ) {
+      return "قیمت محصولات در کارت هر محصول نمایش داده می‌شود. لطفاً نام کالای موردنظر را جست‌وجو کنید.";
+    }
+
+    if (
+      q.includes("پیشنهاد") ||
+      q.includes("recommend") ||
+      q.includes("محصول") ||
+      q.includes("product")
+    ) {
+      return "برای دیدن محصولات پیشنهادی، فهرست محصولات فروشگاه را بررسی کنید.";
+    }
+
+    return "ممنون از سؤال شما! نام محصول یا موضوع موردنظر را دقیق‌تر بنویسید. این دستیار آزمایشی است و هنوز به هوش مصنوعی آنلاین متصل نیست.";
+  }
+
+  function gsSendMessage() {
+    const input = document.getElementById("gs-ai-input");
+    const question = input.value.trim();
+
+    if (!question) return;
+
+    const userMessage = document.createElement("p");
+    userMessage.textContent = "شما: " + question;
+    messages.appendChild(userMessage);
+
+    const answer = document.createElement("p");
+    answer.textContent = "دستیار: " + gsReply(question);
+    messages.appendChild(answer);
+
+    input.value = "";
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  document.getElementById("gs-ai-send").onclick = gsSendMessage;
+
+  document.getElementById("gs-ai-input").addEventListener(
+    "keydown",
+    function (event) {
+      if (event.key === "Enter") gsSendMessage();
+    }
+  );
+})();
+</script>  
 </body>
 </html>
